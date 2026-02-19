@@ -82,25 +82,28 @@ fun ProfileScreen(viewModel: PetViewModel, navController: NavController) {
                             Icon(Icons.Default.Add, contentDescription = "Add Pet")
                         }
 
-                        SmallFloatingActionButton(
-                            onClick = {
-                                expanded = false
-                                showAddActivitySheet = true
-                            },
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer
-                        ) {
-                            Icon(Icons.Default.CalendarToday, contentDescription = "Add Activity")
+                        if (pets.isNotEmpty()) {
+                            SmallFloatingActionButton(
+                                onClick = {
+                                    expanded = false
+                                    showAddActivitySheet = true
+                                },
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer
+                            ) {
+                                Icon(Icons.Default.CalendarToday, contentDescription = "Add Activity")
+                            }
+
+                            SmallFloatingActionButton(
+                                onClick = {
+                                    expanded = false
+                                    navController.navigate("edit")
+                                },
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer
+                            ) {
+                                Icon(Icons.Default.Edit, contentDescription = "Edit Pet")
+                            }
                         }
 
-                        SmallFloatingActionButton(
-                            onClick = {
-                                expanded = false
-                                navController.navigate("edit")
-                            },
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer
-                        ) {
-                            Icon(Icons.Default.Edit, contentDescription = "Edit Pet")
-                        }
                     }
                 }
 
