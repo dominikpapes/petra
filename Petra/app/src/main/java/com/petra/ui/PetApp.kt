@@ -21,5 +21,8 @@ fun PetApp() {
         composable("create") {
             CreatePetScreen(viewModel, navController)
         }
+        composable("edit") {
+            EditPetScreen(viewModel, navController)
+        }
     }
 }

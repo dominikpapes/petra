@@ -1,5 +1,11 @@
 package com.petra.ui
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -10,17 +16,21 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Pets
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.PopupProperties
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -35,26 +45,66 @@ fun ProfileScreen(viewModel: PetViewModel, navController: NavController) {
     val currentPet = pets.find { it.id == viewModel.selectedPetId }
 
     Scaffold(
-        topBar = {
-            if (currentPet != null) {
-                TopAppBar(
-                    title = { },
-                    actions = {
-                        IconButton(onClick = { viewModel.deletePet(currentPet) }) {
-                            Icon(Icons.Default.Delete, "Delete Pet", tint = Color.Red)
+        floatingActionButton = {
+            var expanded by remember { mutableStateOf(false) }
+
+            val rotation by animateFloatAsState(
+                targetValue = if (expanded) 45f else 0f,
+                label = "fab_rotation"
+            )
+
+            Column(
+                horizontalAlignment = Alignment.End,
+            ) {
+                AnimatedVisibility(
+                    visible = expanded,
+                    enter = fadeIn() + scaleIn(),
+                    exit = fadeOut() + scaleOut()
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.End,
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    ) {
+                        SmallFloatingActionButton(
+                            onClick = {
+                                expanded = false
+                                navController.navigate("create")
+                            },
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer
+                        ) {
+                            Icon(Icons.Default.Add, contentDescription = "Add Pet")
+                        }
+
+                        SmallFloatingActionButton(
+                            onClick = {
+                                expanded = false
+                                navController.navigate("edit")
+                            },
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer
+                        ) {
+                            Icon(Icons.Default.Edit, contentDescription = "Edit Pet")
                         }
                     }
-                )
-            }
-        },
-        floatingActionButton = {
-            FloatingActionButton(onClick = { navController.navigate("create") }) {
-                Icon(Icons.Default.Add, "Add Pet")
+                }
+
+                FloatingActionButton(
+                    onClick = { expanded = !expanded }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Pets,
+                        contentDescription = if (expanded) "Close menu" else "Expand menu",
+                        modifier = Modifier.rotate(rotation)
+                    )
+                }
             }
         }
     ) { padding ->
         Column(
-            modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             if (pets.isNotEmpty()) {
@@ -71,7 +121,10 @@ fun ProfileScreen(viewModel: PetViewModel, navController: NavController) {
 
             if (currentPet != null) {
                 Box(
-                    modifier = Modifier.size(200.dp).clip(CircleShape).background(Color(0xFF3F51B5)),
+                    modifier = Modifier
+                        .size(200.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xFF3F51B5)),
                     contentAlignment = Alignment.Center
                 ) {
                     if (currentPet.imageUri != null) {
@@ -104,18 +157,33 @@ fun ProfileScreen(viewModel: PetViewModel, navController: NavController) {
 @Composable
 fun PetDropdown(pets: List<Pet>, selectedPet: Pet?, onPetSelected: (Pet) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
-    Box(contentAlignment = Alignment.Center) {
+    Box(
+        modifier = Modifier.fillMaxWidth(),
+        contentAlignment = Alignment.Center
+    ) {
         Row(
-            modifier = Modifier.clickable { expanded = true }.padding(8.dp),
+            modifier = Modifier
+                .clickable { expanded = true }
+                .padding(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(selectedPet?.name ?: "Select Pet", style = MaterialTheme.typography.displaySmall)
             Icon(Icons.Default.ArrowDropDown, null, modifier = Modifier.size(32.dp))
         }
-        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            properties = PopupProperties(usePlatformDefaultWidth = false)
+        ) {
             pets.forEach { pet ->
                 DropdownMenuItem(
-                    text = { Text(pet.name) },
+                    text = {
+                        Text(
+                            pet.name,
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.Center
+                        )
+                    },
                     onClick = { onPetSelected(pet); expanded = false }
                 )
             }

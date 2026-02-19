@@ -40,6 +40,18 @@ class PetViewModel(
         }
     }
 
+    fun updatePet(id: Int, name: String, birthday: LocalDate, sourceUri: Uri?) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val internalPath = sourceUri?.let { uri -> copyImageToInternalStorage(uri) }
+            dao.updatePet(Pet(
+                id = id,
+                name = name.ifBlank { "Unknown Pet" },
+                birthdayEpochDay = birthday.toEpochDay(),
+                imageUri = internalPath
+            ))
+        }
+    }
+
     private fun copyImageToInternalStorage(uri: Uri): String? {
         return try {
             val fileName = "pet_${UUID.randomUUID()}.jpg"
