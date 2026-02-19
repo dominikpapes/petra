@@ -109,6 +109,12 @@ class PetViewModel(
         }
     }
 
+    fun deletePetActivity(activity: PetActivity) {
+        viewModelScope.launch(Dispatchers.IO) {
+            petActivityDao.deleteActivity(activity)
+        }
+    }
+
     fun ensureSelection(pets: List<Pet>) {
         if (selectedPetId == null && pets.isNotEmpty()) {
             selectedPetId = pets.first().id

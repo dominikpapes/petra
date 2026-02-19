@@ -1,6 +1,7 @@
 package com.petra.data
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
@@ -12,4 +13,7 @@ interface PetActivityDao {
 
     @Insert
     suspend fun insertActivity(activity: PetActivity)
+
+    @Delete
+    suspend fun deleteActivity(activity: PetActivity)
 }

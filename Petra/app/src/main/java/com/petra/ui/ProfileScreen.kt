@@ -17,6 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Pets
 import androidx.compose.material3.*
@@ -74,21 +75,21 @@ fun ProfileScreen(viewModel: PetViewModel, navController: NavController) {
                         SmallFloatingActionButton(
                             onClick = {
                                 expanded = false
-                                showAddActivitySheet = true
-                            },
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer
-                        ) {
-                            Icon(Icons.Default.Add, contentDescription = "Add Activity")
-                        }
-
-                        SmallFloatingActionButton(
-                            onClick = {
-                                expanded = false
                                 navController.navigate("create")
                             },
                             containerColor = MaterialTheme.colorScheme.secondaryContainer
                         ) {
                             Icon(Icons.Default.Add, contentDescription = "Add Pet")
+                        }
+
+                        SmallFloatingActionButton(
+                            onClick = {
+                                expanded = false
+                                showAddActivitySheet = true
+                            },
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer
+                        ) {
+                            Icon(Icons.Default.CalendarToday, contentDescription = "Add Activity")
                         }
 
                         SmallFloatingActionButton(

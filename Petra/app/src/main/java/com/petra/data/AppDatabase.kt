@@ -5,7 +5,7 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import java.time.LocalDateTime
 
-@Database(entities = [Pet::class, PetActivity::class], version = 2)
+@Database(entities = [Pet::class, PetActivity::class], version = 3)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun petDao(): PetDao
