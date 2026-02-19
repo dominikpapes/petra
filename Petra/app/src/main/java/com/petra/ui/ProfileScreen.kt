@@ -157,33 +157,18 @@ fun ProfileScreen(viewModel: PetViewModel, navController: NavController) {
 @Composable
 fun PetDropdown(pets: List<Pet>, selectedPet: Pet?, onPetSelected: (Pet) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
-    Box(
-        modifier = Modifier.fillMaxWidth(),
-        contentAlignment = Alignment.Center
-    ) {
+    Box(contentAlignment = Alignment.Center) {
         Row(
-            modifier = Modifier
-                .clickable { expanded = true }
-                .padding(8.dp),
+            modifier = Modifier.clickable { expanded = true }.padding(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(selectedPet?.name ?: "Select Pet", style = MaterialTheme.typography.displaySmall)
             Icon(Icons.Default.ArrowDropDown, null, modifier = Modifier.size(32.dp))
         }
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
-            properties = PopupProperties(usePlatformDefaultWidth = false)
-        ) {
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             pets.forEach { pet ->
                 DropdownMenuItem(
-                    text = {
-                        Text(
-                            pet.name,
-                            modifier = Modifier.fillMaxWidth(),
-                            textAlign = TextAlign.Center
-                        )
-                    },
+                    text = { Text(pet.name) },
                     onClick = { onPetSelected(pet); expanded = false }
                 )
             }
