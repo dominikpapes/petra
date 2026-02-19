@@ -71,4 +71,8 @@ dependencies {
 
     // Material Icons Extended (for the Add icon)
     implementation("androidx.compose.material:material-icons-extended:1.6.0")
+
+    implementation("io.insert-koin:koin-android:3.5.3") // Or whatever the latest version is
+    implementation("io.insert-koin:koin-androidx-compose:3.5.3")
+
 }
