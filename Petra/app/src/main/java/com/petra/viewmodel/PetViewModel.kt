@@ -5,34 +5,47 @@ import android.net.Uri
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.petra.data.Pet
+import com.petra.data.PetActivity
+import com.petra.data.PetActivityDao
 import com.petra.data.PetDao
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.UUID
 
 class PetViewModel(
-    private val dao: PetDao,
+    private val petDao: PetDao,
+    private val petActivityDao: PetActivityDao,
     private val context: Context
 ) : ViewModel() {
 
-    val allPets: StateFlow<List<Pet>> = dao.getAllPets()
+    val allPets: StateFlow<List<Pet>> = petDao.getAllPets()
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     var selectedPetId by mutableStateOf<Int?>(null)
 
+    val petActivities: StateFlow<List<PetActivity>> = snapshotFlow { selectedPetId }
+        .flatMapLatest { petId ->
+            if (petId != null) {
+                petActivityDao.getActivitiesForPet(petId)
+            } else {
+                flowOf(emptyList())
+            }
+        }
+        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+
     fun addPet(name: String, birthday: LocalDate, sourceUri: Uri?) {
         viewModelScope.launch(Dispatchers.IO) {
             val internalPath = sourceUri?.let { uri -> copyImageToInternalStorage(uri) }
-            dao.insertPet(Pet(
+            petDao.insertPet(Pet(
                 name = name.ifBlank { "Unknown Pet" },
                 birthdayEpochDay = birthday.toEpochDay(),
                 imageUri = internalPath
@@ -40,10 +53,23 @@ class PetViewModel(
         }
     }
 
+    fun addPetActivity(petId: Int, type: String, description: String?, dateTime: LocalDateTime) {
+        viewModelScope.launch(Dispatchers.IO) {
+            petActivityDao.insertActivity(
+                PetActivity(
+                    petId = petId,
+                    type = type,
+                    description = description,
+                    dateTime = dateTime
+                )
+            )
+        }
+    }
+
     fun updatePet(id: Int, name: String, birthday: LocalDate, sourceUri: Uri?) {
         viewModelScope.launch(Dispatchers.IO) {
             val internalPath = sourceUri?.let { uri -> copyImageToInternalStorage(uri) }
-            dao.updatePet(Pet(
+            petDao.updatePet(Pet(
                 id = id,
                 name = name.ifBlank { "Unknown Pet" },
                 birthdayEpochDay = birthday.toEpochDay(),
@@ -78,7 +104,7 @@ class PetViewModel(
                 val file = File(path)
                 if (file.exists()) file.delete()
             }
-            dao.deletePet(pet)
+            petDao.deletePet(pet)
             if (selectedPetId == pet.id) selectedPetId = null
         }
     }

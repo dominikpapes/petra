@@ -15,9 +15,14 @@ val appModule = module {
             .build()
     }
 
-    // 2. Provide the Dao (extracting it from the database)
+    // 2. Provide the Daos (extracting them from the database)
     single { get<AppDatabase>().petDao() }
+    single { get<AppDatabase>().petActivityDao() }
 
     // 3. Provide the ViewModel
-    viewModel { PetViewModel(dao = get(), context = androidContext()) }
+    viewModel { PetViewModel(
+        petDao = get(),
+        petActivityDao = get(),
+        context = androidContext()
+    ) }
 }

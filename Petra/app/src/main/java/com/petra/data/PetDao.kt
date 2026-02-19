@@ -13,11 +13,11 @@ interface PetDao {
     fun getAllPets(): Flow<List<Pet>>
 
     @Insert
-    fun insertPet(pet: Pet): Long
+    suspend fun insertPet(pet: Pet): Long
 
     @Update
-    fun updatePet(pet: Pet)
+    suspend fun updatePet(pet: Pet)
 
     @Delete
-    fun deletePet(pet: Pet)
+    suspend fun deletePet(pet: Pet)
 }

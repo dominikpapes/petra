@@ -10,12 +10,13 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Pets
 import androidx.compose.material3.*
@@ -28,9 +29,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.PopupProperties
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -41,8 +40,14 @@ import com.petra.viewmodel.PetViewModel
 @Composable
 fun ProfileScreen(viewModel: PetViewModel, navController: NavController) {
     val pets by viewModel.allPets.collectAsState()
+    val activities by viewModel.petActivities.collectAsState()
     LaunchedEffect(pets) { viewModel.ensureSelection(pets) }
     val currentPet = pets.find { it.id == viewModel.selectedPetId }
+    var showAddActivitySheet by remember { mutableStateOf(false) }
+
+    if (showAddActivitySheet) {
+        AddPetActivitySheet(viewModel = viewModel, onDismiss = { showAddActivitySheet = false })
+    }
 
     Scaffold(
         floatingActionButton = {
@@ -66,6 +71,16 @@ fun ProfileScreen(viewModel: PetViewModel, navController: NavController) {
                         verticalArrangement = Arrangement.spacedBy(16.dp),
                         modifier = Modifier.padding(bottom = 16.dp)
                     ) {
+                        SmallFloatingActionButton(
+                            onClick = {
+                                expanded = false
+                                showAddActivitySheet = true
+                            },
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer
+                        ) {
+                            Icon(Icons.Default.Add, contentDescription = "Add Activity")
+                        }
+
                         SmallFloatingActionButton(
                             onClick = {
                                 expanded = false
@@ -148,6 +163,22 @@ fun ProfileScreen(viewModel: PetViewModel, navController: NavController) {
                 ) {
                     InfoCard(text = "Age: ${currentPet.getAge()}")
                     InfoCard(text = "Birthday: ${currentPet.getFormattedDate()}")
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                LazyColumn(modifier = Modifier.fillMaxWidth()) {
+                    items(activities) { activity ->
+                        Card(modifier = Modifier.padding(vertical = 4.dp).fillMaxWidth()) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                Text(text = activity.type, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
+                                if (activity.description != null) {
+                                    Text(text = activity.description, style = MaterialTheme.typography.bodyMedium)
+                                }
+                                Text(text = activity.dateTime.toString(), style = MaterialTheme.typography.bodySmall)
+                            }
+                        }
+                    }
                 }
             }
         }
