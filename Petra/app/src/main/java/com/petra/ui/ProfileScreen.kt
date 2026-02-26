@@ -61,6 +61,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
@@ -189,120 +190,145 @@ fun ProfileScreen(viewModel: PetViewModel, navController: NavController) {
             }
         }
     ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            if (pets.isNotEmpty()) {
+        if (pets.isEmpty()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Pets,
+                    contentDescription = "No pets",
+                    modifier = Modifier.size(100.dp),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+                Text(
+                    text = "No pets yet",
+                    style = MaterialTheme.typography.headlineMedium
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "Click the pet icon below to add your first companion!",
+                    style = MaterialTheme.typography.bodyLarge,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(horizontal = 32.dp)
+                )
+            }
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
                 PetDropdown(
                     pets = pets,
                     selectedPet = currentPet,
                     onPetSelected = { viewModel.selectedPetId = it.id }
                 )
-            } else {
-                Text("No pets yet. Click + to add one!", style = MaterialTheme.typography.headlineSmall)
-            }
 
-            Spacer(modifier = Modifier.height(40.dp))
+                Spacer(modifier = Modifier.height(40.dp))
 
-            if (currentPet != null) {
-                Box(
-                    modifier = Modifier
-                        .size(120.dp)
-                        .clip(CircleShape)
-                        .background(Color(0xFF3F51B5)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    if (currentPet.imageUri != null) {
-                        AsyncImage(
-                            model = ImageRequest.Builder(LocalContext.current)
-                                .data(currentPet.imageUri).crossfade(true).build(),
-                            contentDescription = "Pet Image",
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    } else {
-                        Icon(Icons.Default.Pets, null, tint = Color.White, modifier = Modifier.size(60.dp))
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(25.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    InfoCard(text = "Age: ${currentPet.getAge()}")
-                    InfoCard(text = "Birthday: ${currentPet.getFormattedDate()}")
-                }
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                val groupedActivities = activities.groupBy { it.dateTime.year to it.dateTime.monthValue }
-                val sortedGroupedActivities = groupedActivities.toSortedMap(
-                    compareBy<Pair<Int, Int>> { it.first }.thenBy { it.second }
-                )
-
-                LazyColumn(modifier = Modifier.fillMaxWidth()) {
-                    if (activities.isEmpty()) {
-                        item {
-                            Text(
-                                "No activities for this pet yet.",
-                                style = MaterialTheme.typography.bodyLarge,
-                                modifier = Modifier.padding(16.dp)
+                if (currentPet != null) {
+                    Box(
+                        modifier = Modifier
+                            .size(120.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFF3F51B5)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (currentPet.imageUri != null) {
+                            AsyncImage(
+                                model = ImageRequest.Builder(LocalContext.current)
+                                    .data(currentPet.imageUri).crossfade(true).build(),
+                                contentDescription = "Pet Image",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize()
                             )
+                        } else {
+                            Icon(Icons.Default.Pets, null, tint = Color.White, modifier = Modifier.size(60.dp))
                         }
-                    } else {
-                        sortedGroupedActivities.forEach { (yearMonth, monthActivities) ->
+                    }
+
+                    Spacer(modifier = Modifier.height(25.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        InfoCard(text = "Age: ${currentPet.getAge()}")
+                        InfoCard(text = "Birthday: ${currentPet.getFormattedDate()}")
+                    }
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    val groupedActivities = activities.groupBy { it.dateTime.year to it.dateTime.monthValue }
+                    val sortedGroupedActivities = groupedActivities.toSortedMap(
+                        compareBy<Pair<Int, Int>> { it.first }.thenBy { it.second }
+                    )
+
+                    LazyColumn(modifier = Modifier.fillMaxWidth()) {
+                        if (activities.isEmpty()) {
                             item {
-                                val monthName = Month.of(yearMonth.second).getDisplayName(TextStyle.FULL, Locale.getDefault())
                                 Text(
-                                    text = "$monthName, ${yearMonth.first}",
-                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                                    modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp)
+                                    "No activities for this pet yet.",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    modifier = Modifier.padding(16.dp)
                                 )
                             }
-                            items(monthActivities) { activity ->
-                                Card(
-                                    modifier = Modifier
-                                        .padding(vertical = 4.dp, horizontal = 8.dp)
-                                        .fillMaxWidth()
-                                        .clickable {
-                                            activityToEdit = activity
-                                            showActivitySheet = true
-                                        }
-                                ) {
-                                    Row(
+                        } else {
+                            sortedGroupedActivities.forEach { (yearMonth, monthActivities) ->
+                                item {
+                                    val monthName = Month.of(yearMonth.second).getDisplayName(TextStyle.FULL, Locale.getDefault())
+                                    Text(
+                                        text = "$monthName, ${yearMonth.first}",
+                                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                        modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp)
+                                    )
+                                }
+                                items(monthActivities) { activity ->
+                                    Card(
                                         modifier = Modifier
-                                            .padding(16.dp)
-                                            .fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Icon(activity.type.icon, null, modifier = Modifier.size(24.dp))
-                                        Spacer(modifier = Modifier.width(8.dp))
-                                        Column(modifier = Modifier.weight(1f)) {
-                                            Text(
-                                                text = activity.type.name,
-                                                style = MaterialTheme.typography.bodyLarge,
-                                                fontWeight = FontWeight.Bold
-                                            )
-                                            if (!activity.description.isNullOrBlank()) {
-                                                Text(text = activity.description, style = MaterialTheme.typography.bodyMedium)
+                                            .padding(vertical = 4.dp, horizontal = 8.dp)
+                                            .fillMaxWidth()
+                                            .clickable {
+                                                activityToEdit = activity
+                                                showActivitySheet = true
                                             }
-                                        }
-                                        Column(horizontalAlignment = Alignment.End) {
-                                            Text(
-                                                text = activity.dateTime.toLocalDate().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)),
-                                                style = MaterialTheme.typography.bodySmall
-                                            )
-                                            Text(
-                                                text = activity.dateTime.toLocalTime().format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)),
-                                                style = MaterialTheme.typography.bodySmall
-                                            )
+                                    ) {
+                                        Row(
+                                            modifier = Modifier
+                                                .padding(16.dp)
+                                                .fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Icon(activity.type.icon, null, modifier = Modifier.size(24.dp))
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Column(modifier = Modifier.weight(1f)) {
+                                                Text(
+                                                    text = activity.type.name,
+                                                    style = MaterialTheme.typography.bodyLarge,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                                if (!activity.description.isNullOrBlank()) {
+                                                    Text(text = activity.description, style = MaterialTheme.typography.bodyMedium)
+                                                }
+                                            }
+                                            Column(horizontalAlignment = Alignment.End) {
+                                                Text(
+                                                    text = activity.dateTime.toLocalDate().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)),
+                                                    style = MaterialTheme.typography.bodySmall
+                                                )
+                                                Text(
+                                                    text = activity.dateTime.toLocalTime().format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)),
+                                                    style = MaterialTheme.typography.bodySmall
+                                                )
+                                            }
                                         }
                                     }
                                 }
