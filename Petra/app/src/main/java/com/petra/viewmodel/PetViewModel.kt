@@ -94,6 +94,12 @@ class PetViewModel(
         }
     }
 
+    fun updatePetActivity(activity: PetActivity) {
+        viewModelScope.launch(Dispatchers.IO) {
+            petActivityDao.updateActivity(activity)
+        }
+    }
+
     private fun copyImageToInternalStorage(uri: Uri): String? {
         return try {
             val fileName = "pet_${UUID.randomUUID()}.jpg"
