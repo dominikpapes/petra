@@ -8,17 +8,23 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.Data
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.petra.data.Pet
 import com.petra.data.PetActivity
 import com.petra.data.PetActivityDao
 import com.petra.data.PetDao
+import com.petra.workers.NotificationWorker
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
+import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.UUID
 
 class PetViewModel(
@@ -63,6 +69,7 @@ class PetViewModel(
                     dateTime = dateTime
                 )
             )
+            scheduleNotification(petId, dateTime, type, description)
         }
     }
 
@@ -140,6 +147,46 @@ class PetViewModel(
     fun ensureSelection(pets: List<Pet>) {
         if (selectedPetId == null && pets.isNotEmpty()) {
             selectedPetId = pets.first().id
+        }
+    }
+
+    private fun scheduleNotification(petId: Int, dateTime: LocalDateTime, type: String, description: String?) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val pet = petDao.getPetById(petId)
+            val workManager = WorkManager.getInstance(context)
+            val data = Data.Builder()
+                .putString("pet_name", pet?.name)
+                .putString("activity_type", type)
+                .putString("activity_time", dateTime.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")))
+                .build()
+
+            // Immediately
+            val nowRequest = OneTimeWorkRequestBuilder<NotificationWorker>()
+                .setInputData(data)
+                .build()
+            workManager.enqueue(nowRequest)
+
+            // 30 minutes before
+            val thirtyMinutesBefore = dateTime.minusMinutes(30)
+            val thirtyMinDelay = Duration.between(LocalDateTime.now(), thirtyMinutesBefore).toMillis()
+            if (thirtyMinDelay > 0) {
+                val thirtyMinRequest = OneTimeWorkRequestBuilder<NotificationWorker>()
+                    .setInitialDelay(thirtyMinDelay, java.util.concurrent.TimeUnit.MILLISECONDS)
+                    .setInputData(data)
+                    .build()
+                workManager.enqueue(thirtyMinRequest)
+            }
+
+            // 1 day before
+            val oneDayBefore = dateTime.minusDays(1)
+            val oneDayDelay = Duration.between(LocalDateTime.now(), oneDayBefore).toMillis()
+            if (oneDayDelay > 0) {
+                val oneDayRequest = OneTimeWorkRequestBuilder<NotificationWorker>()
+                    .setInitialDelay(oneDayDelay, java.util.concurrent.TimeUnit.MILLISECONDS)
+                    .setInputData(data)
+                    .build()
+                workManager.enqueue(oneDayRequest)
+            }
         }
     }
 }

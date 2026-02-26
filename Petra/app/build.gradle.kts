@@ -75,4 +75,10 @@ dependencies {
     implementation("io.insert-koin:koin-android:3.5.3") // Or whatever the latest version is
     implementation("io.insert-koin:koin-androidx-compose:3.5.3")
 
+    // WorkManager
+    implementation("androidx.work:work-runtime-ktx:2.11.1")
+
+    // DataStore
+    implementation("androidx.datastore:datastore-preferences:1.2.0")
+
 }
