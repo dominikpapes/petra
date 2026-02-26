@@ -68,13 +68,29 @@ class PetViewModel(
 
     fun updatePet(id: Int, name: String, birthday: LocalDate, sourceUri: Uri?) {
         viewModelScope.launch(Dispatchers.IO) {
-            val internalPath = sourceUri?.let { uri -> copyImageToInternalStorage(uri) }
-            petDao.updatePet(Pet(
+            val currentPet = petDao.getPetById(id)
+            val imagePath = if (sourceUri?.scheme == "content") {
+                // A new image has been selected, so copy it and delete the old one.
+                val newPath = copyImageToInternalStorage(sourceUri)
+                currentPet?.imageUri?.let { oldPath ->
+                    val oldFile = File(oldPath)
+                    if (oldFile.exists()) {
+                        oldFile.delete()
+                    }
+                }
+                newPath
+            } else {
+                // No new image selected, so keep the old path.
+                currentPet?.imageUri
+            }
+
+            val updatedPet = Pet(
                 id = id,
                 name = name.ifBlank { "Unknown Pet" },
                 birthdayEpochDay = birthday.toEpochDay(),
-                imageUri = internalPath
-            ))
+                imageUri = imagePath
+            )
+            petDao.updatePet(updatedPet)
         }
     }
 

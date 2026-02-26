@@ -154,6 +154,7 @@ fun EditPetScreen(viewModel: PetViewModel, navController: NavController) {
                         navController.popBackStack()
                     }
                 },
+                enabled = name.isNotBlank(),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Save Changes")
