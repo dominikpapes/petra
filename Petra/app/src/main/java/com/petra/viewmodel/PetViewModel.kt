@@ -78,7 +78,6 @@ class PetViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             val currentPet = petDao.getPetById(id)
             val imagePath = if (sourceUri?.scheme == "content") {
-                // A new image has been selected, so copy it and delete the old one.
                 val newPath = copyImageToInternalStorage(sourceUri)
                 currentPet?.imageUri?.let { oldPath ->
                     val oldFile = File(oldPath)
@@ -88,7 +87,6 @@ class PetViewModel(
                 }
                 newPath
             } else {
-                // No new image selected, so keep the old path.
                 currentPet?.imageUri
             }
 
@@ -164,13 +162,11 @@ class PetViewModel(
 
             val data = dataBuilder.build()
 
-            // Immediately
             val nowRequest = OneTimeWorkRequestBuilder<NotificationWorker>()
                 .setInputData(data)
                 .build()
             workManager.enqueue(nowRequest)
 
-            // 30 minutes before
             val thirtyMinutesBefore = dateTime.minusMinutes(30)
             val thirtyMinDelay = Duration.between(LocalDateTime.now(), thirtyMinutesBefore).toMillis()
             if (thirtyMinDelay > 0) {
@@ -181,7 +177,6 @@ class PetViewModel(
                 workManager.enqueue(thirtyMinRequest)
             }
 
-            // 1 day before
             val oneDayBefore = dateTime.minusDays(1)
             val oneDayDelay = Duration.between(LocalDateTime.now(), oneDayBefore).toMillis()
             if (oneDayDelay > 0) {

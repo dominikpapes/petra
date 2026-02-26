@@ -11,7 +11,6 @@ import org.koin.androidx.compose.koinViewModel
 fun PetApp() {
     val navController = rememberNavController()
 
-    // Koin intercepts this call and provides the ViewModel from the module we built!
     val viewModel: PetViewModel = koinViewModel()
 
     NavHost(navController = navController, startDestination = "profile") {
