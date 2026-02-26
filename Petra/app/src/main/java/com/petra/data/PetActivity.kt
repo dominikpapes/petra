@@ -17,7 +17,7 @@ import java.time.LocalDateTime
 data class PetActivity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val petId: Int,
-    val type: String,
+    val type: ActivityType,
     val description: String?,
     val dateTime: LocalDateTime
 )

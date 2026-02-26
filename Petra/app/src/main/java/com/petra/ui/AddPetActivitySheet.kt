@@ -5,16 +5,26 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Text
@@ -33,17 +43,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.petra.data.ActivityType
 import com.petra.data.PetActivity
 import com.petra.viewmodel.PetViewModel
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Schedule
-import androidx.compose.material3.*
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
@@ -57,7 +63,7 @@ fun AddPetActivitySheet(
     val sheetState = rememberModalBottomSheetState()
     val isEditMode = activityToEdit != null
 
-    var activityType by remember { mutableStateOf(activityToEdit?.type ?: "") }
+    var activityType by remember { mutableStateOf(activityToEdit?.type ?: ActivityType.Grooming) }
     var description by remember { mutableStateOf(activityToEdit?.description ?: "") }
     val currentPetId = viewModel.selectedPetId
 
@@ -65,6 +71,7 @@ fun AddPetActivitySheet(
     var selectedTime by remember { mutableStateOf(activityToEdit?.dateTime?.toLocalTime() ?: LocalTime.now()) }
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
+    var activityTypeExpanded by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         if (selectedDate == LocalDate.now() && selectedTime.isBefore(LocalTime.now())) {
@@ -83,8 +90,45 @@ fun AddPetActivitySheet(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Text(if (isEditMode) "Edit Activity" else "Add New Activity", style = androidx.compose.material3.MaterialTheme.typography.headlineSmall)
-            OutlinedTextField(value = activityType, onValueChange = { activityType = it }, label = { Text("Activity Type") }, modifier = Modifier.fillMaxWidth())
+            Text(if (isEditMode) "Edit Activity" else "Add New Activity", style = MaterialTheme.typography.headlineSmall)
+
+            ExposedDropdownMenuBox(
+                expanded = activityTypeExpanded,
+                onExpandedChange = { activityTypeExpanded = !activityTypeExpanded }
+            ) {
+                OutlinedTextField(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor(MenuAnchorType.PrimaryEditable),
+                    readOnly = true,
+                    value = activityType.name,
+                    onValueChange = {},
+                    label = { Text("Activity Type") },
+                    leadingIcon = { Icon(activityType.icon, null) },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = activityTypeExpanded) },
+                )
+                ExposedDropdownMenu(
+                    expanded = activityTypeExpanded,
+                    onDismissRequest = { activityTypeExpanded = false },
+                ) {
+                    ActivityType.values().forEach { type ->
+                        DropdownMenuItem(
+                            text = {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(type.icon, null, modifier = Modifier.size(24.dp))
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(type.name)
+                                }
+                            },
+                            onClick = {
+                                activityType = type
+                                activityTypeExpanded = false
+                            }
+                        )
+                    }
+                }
+            }
+
             OutlinedTextField(value = description, onValueChange = { description = it }, label = { Text("Description (optional)") }, modifier = Modifier.fillMaxWidth())
 
             Row(

@@ -11,6 +11,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
+import com.petra.data.ActivityType
 import com.petra.data.Pet
 import com.petra.data.PetActivity
 import com.petra.data.PetActivityDao
@@ -59,7 +60,7 @@ class PetViewModel(
         }
     }
 
-    fun addPetActivity(petId: Int, type: String, description: String?, dateTime: LocalDateTime) {
+    fun addPetActivity(petId: Int, type: ActivityType, description: String?, dateTime: LocalDateTime) {
         viewModelScope.launch(Dispatchers.IO) {
             petActivityDao.insertActivity(
                 PetActivity(
@@ -150,15 +151,18 @@ class PetViewModel(
         }
     }
 
-    private fun scheduleNotification(petId: Int, dateTime: LocalDateTime, type: String, description: String?) {
+    private fun scheduleNotification(petId: Int, dateTime: LocalDateTime, type: ActivityType, description: String?) {
         viewModelScope.launch(Dispatchers.IO) {
             val pet = petDao.getPetById(petId)
             val workManager = WorkManager.getInstance(context)
-            val data = Data.Builder()
+            val dataBuilder = Data.Builder()
                 .putString("pet_name", pet?.name)
-                .putString("activity_type", type)
-                .putString("activity_time", dateTime.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")))
-                .build()
+                .putString("activity_type", type.name)
+                .putString("activity_time", "Due: " + dateTime.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")))
+
+            description?.let { dataBuilder.putString("activity_description", it) }
+
+            val data = dataBuilder.build()
 
             // Immediately
             val nowRequest = OneTimeWorkRequestBuilder<NotificationWorker>()

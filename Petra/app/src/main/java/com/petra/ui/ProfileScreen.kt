@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -210,7 +211,7 @@ fun ProfileScreen(viewModel: PetViewModel, navController: NavController) {
             if (currentPet != null) {
                 Box(
                     modifier = Modifier
-                        .size(200.dp)
+                        .size(120.dp)
                         .clip(CircleShape)
                         .background(Color(0xFF3F51B5)),
                     contentAlignment = Alignment.Center
@@ -224,11 +225,11 @@ fun ProfileScreen(viewModel: PetViewModel, navController: NavController) {
                             modifier = Modifier.fillMaxSize()
                         )
                     } else {
-                        Icon(Icons.Default.Pets, null, tint = Color.White, modifier = Modifier.size(100.dp))
+                        Icon(Icons.Default.Pets, null, tint = Color.White, modifier = Modifier.size(60.dp))
                     }
                 }
 
-                Spacer(modifier = Modifier.height(50.dp))
+                Spacer(modifier = Modifier.height(25.dp))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -260,9 +261,8 @@ fun ProfileScreen(viewModel: PetViewModel, navController: NavController) {
                                 val monthName = Month.of(yearMonth.second).getDisplayName(TextStyle.FULL, Locale.getDefault())
                                 Text(
                                     text = "$monthName, ${yearMonth.first}",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp),
-                                    fontWeight = FontWeight.Bold
+                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                    modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp)
                                 )
                             }
                             items(monthActivities) { activity ->
@@ -282,8 +282,14 @@ fun ProfileScreen(viewModel: PetViewModel, navController: NavController) {
                                         horizontalArrangement = Arrangement.SpaceBetween,
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
+                                        Icon(activity.type.icon, null, modifier = Modifier.size(24.dp))
+                                        Spacer(modifier = Modifier.width(8.dp))
                                         Column(modifier = Modifier.weight(1f)) {
-                                            Text(text = activity.type, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
+                                            Text(
+                                                text = activity.type.name,
+                                                style = MaterialTheme.typography.bodyLarge,
+                                                fontWeight = FontWeight.Bold
+                                            )
                                             if (!activity.description.isNullOrBlank()) {
                                                 Text(text = activity.description, style = MaterialTheme.typography.bodyMedium)
                                             }
@@ -339,8 +345,8 @@ fun InfoCard(text: String) {
         modifier = Modifier.padding(horizontal = 8.dp)
     ) {
         Text(
-            text = text, modifier = Modifier.padding(vertical = 12.dp, horizontal = 24.dp),
-            style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold
+            text = text, modifier = Modifier.padding(vertical = 6.dp, horizontal = 12.dp),
+            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
         )
     }
 }

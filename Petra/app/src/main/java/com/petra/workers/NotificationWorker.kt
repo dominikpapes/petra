@@ -15,6 +15,7 @@ class NotificationWorker(appContext: Context, workerParams: WorkerParameters) :
     override suspend fun doWork(): Result {
         val petName = inputData.getString("pet_name") ?: ""
         val activityType = inputData.getString("activity_type") ?: ""
+        val activityDescription = inputData.getString("activity_description") ?: ""
         val activityTime = inputData.getString("activity_time") ?: ""
 
         val notificationManager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -26,7 +27,8 @@ class NotificationWorker(appContext: Context, workerParams: WorkerParameters) :
 
         val notification = NotificationCompat.Builder(applicationContext, "pet_activity_channel")
             .setContentTitle("$petName: $activityType")
-            .setContentText("Due: $activityTime")
+            .setContentText(activityDescription)
+            .setStyle(NotificationCompat.BigTextStyle().bigText("$activityDescription\n$activityTime"))
             .setSmallIcon(R.mipmap.ic_launcher)
             .build()
 
