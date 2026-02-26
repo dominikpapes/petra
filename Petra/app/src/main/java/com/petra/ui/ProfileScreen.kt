@@ -62,6 +62,11 @@ import coil.request.ImageRequest
 import com.petra.data.Pet
 import com.petra.data.PetActivity
 import com.petra.viewmodel.PetViewModel
+import java.time.Month
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
+import java.time.format.TextStyle
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -203,23 +208,66 @@ fun ProfileScreen(viewModel: PetViewModel, navController: NavController) {
 
                 Spacer(modifier = Modifier.height(20.dp))
 
+                val groupedActivities = activities.groupBy { it.dateTime.year to it.dateTime.monthValue }
+                val sortedGroupedActivities = groupedActivities.toSortedMap(
+                    compareBy<Pair<Int, Int>> { it.first }.thenBy { it.second }
+                )
+
                 LazyColumn(modifier = Modifier.fillMaxWidth()) {
-                    items(activities) { activity ->
-                        Card(
-                            modifier = Modifier
-                                .padding(vertical = 4.dp)
-                                .fillMaxWidth()
-                                .clickable {
-                                    activityToEdit = activity
-                                    showActivitySheet = true
+                    if (activities.isEmpty()) {
+                        item {
+                            Text(
+                                "No activities for this pet yet.",
+                                style = MaterialTheme.typography.bodyLarge,
+                                modifier = Modifier.padding(16.dp)
+                            )
+                        }
+                    } else {
+                        sortedGroupedActivities.forEach { (yearMonth, monthActivities) ->
+                            item {
+                                val monthName = Month.of(yearMonth.second).getDisplayName(TextStyle.FULL, Locale.getDefault())
+                                Text(
+                                    text = "$monthName, ${yearMonth.first}",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp),
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                            items(monthActivities) { activity ->
+                                Card(
+                                    modifier = Modifier
+                                        .padding(vertical = 4.dp, horizontal = 8.dp)
+                                        .fillMaxWidth()
+                                        .clickable {
+                                            activityToEdit = activity
+                                            showActivitySheet = true
+                                        }
+                                ) {
+                                    Row(
+                                        modifier = Modifier
+                                            .padding(16.dp)
+                                            .fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            Text(text = activity.type, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
+                                            if (!activity.description.isNullOrBlank()) {
+                                                Text(text = activity.description, style = MaterialTheme.typography.bodyMedium)
+                                            }
+                                        }
+                                        Column(horizontalAlignment = Alignment.End) {
+                                            Text(
+                                                text = activity.dateTime.toLocalDate().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)),
+                                                style = MaterialTheme.typography.bodySmall
+                                            )
+                                            Text(
+                                                text = activity.dateTime.toLocalTime().format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)),
+                                                style = MaterialTheme.typography.bodySmall
+                                            )
+                                        }
+                                    }
                                 }
-                        ) {
-                            Column(modifier = Modifier.padding(16.dp)) {
-                                Text(text = activity.type, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
-                                if (activity.description != null) {
-                                    Text(text = activity.description, style = MaterialTheme.typography.bodyMedium)
-                                }
-                                Text(text = activity.dateTime.toString(), style = MaterialTheme.typography.bodySmall)
                             }
                         }
                     }
